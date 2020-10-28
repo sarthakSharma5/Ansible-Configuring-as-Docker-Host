@@ -1,3 +1,0 @@
-- hosts: vboxvm
-  roles:
-          - docker
