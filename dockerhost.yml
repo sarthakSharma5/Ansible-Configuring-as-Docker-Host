@@ -1,0 +1,51 @@
+- hosts: vboxvm
+  gather_facts: false   
+  tasks:
+  - name: config yum for docker
+    yum_repository:
+      name: dockerrepo
+      baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+      description: repo for docker ce
+      enabled: true
+      gpgcheck: no
+
+  - name: install docker software
+    command: "dnf install -y --nobest docker-ce-3:19.03.2-3.el7.x86_64"
+
+  - name: start using service
+    service:
+      name: "docker"
+      state: started
+      enabled: yes
+
+  - name: install software python-36
+    package:
+      name: python36
+      state: present
+
+  - name: install python library for docker
+    pip:
+      name: docker-py
+
+  - name: create directory to store webpages to deploy
+    file:
+      path: "/ansible_docker_webapp"
+      state: directory
+
+  - name: copy webpages to directory created above
+    copy:
+      src: "/root/ansible_training/index.html"
+      dest: "/ansible_docker_webapp"
+
+  - name: launch Container
+    docker_container:
+      name: webapp_ansible
+      image: httpd
+      state: started
+      exposed_ports:
+      - "80"
+      ports:
+      - "90:80"
+      volumes:
+      - /ansible_docker_webapp:/usr/local/apache2/htdocs/
+
